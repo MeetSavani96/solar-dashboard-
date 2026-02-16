@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKVENERGY - Solar Monitoring Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/admin-leads.css">
+    <link rel="stylesheet" href="css/admin-analytics.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message" id="toastMessage">Profile updated successfully!</span>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- LEFT SIDEBAR -->
+    <!-- ============================================ -->
+    <aside class="sidebar" id="sidebar">
+        <!-- Sidebar Toggle Button -->
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+            <span class="toggle-icon">☰</span>
+        </button>
+
+        <div class="sidebar-header">
+            <h1 class="sidebar-logo">AKVENERGY</h1>
+            <p class="sidebar-subtitle">Solar Monitoring</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <button class="nav-link active" data-section="overview">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Overview</span>
+            </button>
+            <button class="nav-link" data-section="analysis">
+                <span class="nav-icon">📈</span>
+                <span class="nav-text">Analysis</span>
+            </button>
+            <button class="nav-link" data-section="performance">
+                <span class="nav-icon">⚡</span>
+                <span class="nav-text">Performance</span>
+            </button>
+            <button class="nav-link" data-section="maintenance">
+                <span class="nav-icon">🔧</span>
+                <span class="nav-text">Maintenance</span>
+            </button>
+            <button class="nav-link" data-section="finance">
+                <span class="nav-icon">💰</span>
+                <span class="nav-text">Finance</span>
+            </button>
+            <button class="nav-link" data-section="roi">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">ROI Forecast</span>
+            </button>
+            <button class="nav-link" data-section="reports">
+                <span class="nav-icon">📄</span>
+                <span class="nav-text">Reports</span>
+            </button>
+            <button class="nav-link" data-section="profile">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">Profile</span>
+            </button>
+            <button class="nav-link" data-section="settings">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">Settings</span>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- ============================================ -->
+    <!-- MAIN CONTENT -->
+    <!-- ============================================ -->
+    <main class="main-content" id="mainContent">
+        <!-- Mobile Hamburger Menu -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Menu">
+            <span class="hamburger-icon">☰</span>
+        </button>
+
+        <!-- TOP HEADER -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h2 class="page-title" id="pageTitle">Overview</h2>
+                <p class="page-subtitle" id="pageSubtitle">Monitor your solar system performance</p>
+            </div>
+            <div class="header-right">
+                <!-- Profile Switcher (Admin Only) -->
+                <div class="profile-switcher" id="profileSwitcher" style="display: none;">
+                    <select id="profileSelect" class="profile-select">
+                        <option value="">Switch Profile...</option>
+                    </select>
+                </div>
+                
+                <!-- Weather Badge -->
+                <div class="status-item">
+                    <span class="status-label">Weather</span>
+                    <span class="status-value weather-badge" id="weatherBadge">
+                        <span class="weather-icon" id="weatherIcon">☀️</span>
+                        <span class="weather-label" id="weatherLabel">Sunny</span>
+                    </span>
+                </div>
+                
+                <div class="status-item">
+                    <span class="status-label">System Status</span>
+                    <span class="status-value online">
+                        <span class="status-dot"></span>
+                        Online
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">System Size</span>
+                    <span class="status-value" id="headerSystemSize">10 kW</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Last Updated</span>
+                    <span class="status-value" id="lastUpdated">Just now</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Section Loader -->
+        <div class="section-loader" id="sectionLoader" style="display: none;">
+            <div class="loader-spinner"></div>
+            <p>Loading...</p>
+        </div>
+
+        <!-- Dynamic Content Container -->
+        <div id="sectionContainer" class="section-container">
+            <!-- OVERVIEW SECTION (Default) -->
+            <section id="overview" class="page-section active-section">
+                <!-- Live Status Hero -->
+                <div class="live-status-hero">
+                    <div class="status-indicator-large">
+                        <div class="status-pulse" id="statusPulse"></div>
+                        <div class="status-icon" id="statusIcon">⚡</div>
+                    </div>
+                    <div class="status-content">
+                        <div class="status-header">
+                            <h2 class="status-title">System is <span class="status-text" id="systemStatusText">Online</span></h2>
+                            <span class="status-badge-large" id="systemStatusBadge">
+                                <span class="status-dot-large"></span>
+                                <span id="systemStatus">Online</span>
+                            </span>
+                        </div>
+                        <p class="status-explanation" id="statusExplanation">
+                            Your solar panels are actively generating power right now
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Live Power Hero Card -->
+                <div class="live-power-card">
+                    <div class="live-power-header">
+                        <div class="live-indicator">
+                            <span class="live-dot"></span>
+                            <span class="live-text">LIVE</span>
+                        </div>
+                        <h3 class="live-power-title">Current Power Generation</h3>
+                    </div>
+                    <div class="live-power-display">
+                        <div class="power-value-large" id="livePower">5.6</div>
+                        <div class="power-unit-large">kW</div>
+                    </div>
+                    <div class="live-power-insight" id="livePowerInsight">
+                        <span class="insight-icon-small">☀️</span>
+                        <span class="insight-text-small">Generating enough to power 5-6 homes right now</span>
+                    </div>
+                    <div class="power-bar-container">
+                        <div class="power-bar-fill" id="powerBarFill" style="width: 56%"></div>
+                    </div>
+                    <div class="power-bar-labels">
+                        <span class="bar-label">0 kW</span>
+                        <span class="bar-label" id="systemSize">10 kW</span>
+                    </div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="overview-metrics-grid">
+                    <!-- Energy Generation Card -->
+                    <div class="overview-card card-primary">
+                        <div class="overview-card-icon">⚡</div>
+                        <div class="overview-card-content">
+                            <div class="overview-card-label">Energy Generated</div>
+                            <div class="overview-card-values">
+                                <div class="overview-value-row">
+                                    <span class="value-label">Today</span>
+                                    <span class="value-number" id="todayGeneration">42 kWh</span>
+                                </div>
+                                <div class="overview-value-row secondary">
+                                    <span class="value-label">Lifetime</span>
+                                    <span class="value-number" id="totalEnergy">14,200 kWh</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overview-card-insight">
+                            <span class="insight-emoji-small">💡</span>
+                            <span class="insight-text-tiny">On track for a great day</span>
+                        </div>
+                    </div>
+
+                    <!-- Consumption Card -->
+                    <div class="overview-card card-secondary">
+                        <div class="overview-card-icon">🏠</div>
+                        <div class="overview-card-content">
+                            <div class="overview-card-label">Energy Used Today</div>
+                            <div class="overview-card-value-large">
+                                <span class="value-large" id="consumption">18</span>
+                                <span class="unit-large">kWh</span>
+                            </div>
+                        </div>
+                        <div class="overview-card-insight">
+                            <span class="insight-emoji-small">✅</span>
+                            <span class="insight-text-tiny" id="consumptionInsight">Using less than you're generating</span>
+                        </div>
+                    </div>
+
+                    <!-- System Health Card -->
+                    <div class="overview-card card-accent">
+                        <div class="overview-card-icon">🎯</div>
+                        <div class="overview-card-content">
+                            <div class="overview-card-label">System Health</div>
+                            <div class="health-score-display">
+                                <div class="health-ring-small">
+                                    <svg viewBox="0 0 100 100" class="health-svg-small">
+                                        <circle class="health-bg-small" cx="50" cy="50" r="40" />
+                                        <circle class="health-progress-small" cx="50" cy="50" r="40" id="healthProgressCircle" />
+                                    </svg>
+                                    <div class="health-value-small" id="healthScore">96</div>
+                                </div>
+                                <div class="health-status-text">
+                                    <div class="health-status-label" id="healthStatusLabel">Excellent</div>
+                                    <div class="health-status-desc">All systems optimal</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- What This Means Section -->
+                <div class="overview-insight-card">
+                    <div class="insight-header-overview">
+                        <span class="insight-icon-medium">✨</span>
+                        <h3 class="insight-title-medium">What This Means For You</h3>
+                    </div>
+                    <div class="insight-content-overview" id="overviewInsightContent">
+                        <div class="insight-point">
+                            <span class="point-icon">☀️</span>
+                            <p class="point-text">Your system is generating <strong>24 kWh more</strong> than you're using today</p>
+                        </div>
+                        <div class="insight-point">
+                            <span class="point-icon">💰</span>
+                            <p class="point-text">You're saving approximately <strong>₹336</strong> on electricity today</p>
+                        </div>
+                        <div class="insight-point">
+                            <span class="point-icon">🌱</span>
+                            <p class="point-text">Your solar panels are offsetting <strong>233% of your usage</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ANALYSIS SECTION -->
+            <section id="analysis" class="page-section">
+                <!-- KPI Cards - Large, Clean Numbers -->
+                <div class="kpi-grid">
+                    <div class="kpi-card kpi-primary">
+                        <div class="kpi-icon">☀️</div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" id="avgDailyGeneration">42.5</div>
+                            <div class="kpi-unit">kWh/day</div>
+                            <div class="kpi-label">Daily Generation</div>
+                        </div>
+                        <div class="kpi-trend positive">↗ +5.2%</div>
+                    </div>
+                    
+                    <div class="kpi-card kpi-secondary">
+                        <div class="kpi-icon">⚡</div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" id="avgDailyConsumption">18.2</div>
+                            <div class="kpi-unit">kWh/day</div>
+                            <div class="kpi-label">Daily Usage</div>
+                        </div>
+                        <div class="kpi-trend neutral">→ 0%</div>
+                    </div>
+                    
+                    <div class="kpi-card kpi-accent">
+                        <div class="kpi-icon">📈</div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" id="peakPowerGenerated">6.1</div>
+                            <div class="kpi-unit">kW</div>
+                            <div class="kpi-label">Peak Power</div>
+                        </div>
+                        <div class="kpi-trend positive">↗ +2.1%</div>
+                    </div>
+                    
+                    <div class="kpi-card kpi-success">
+                        <div class="kpi-icon">🎯</div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" id="systemEfficiencyAnalysis">94.5</div>
+                            <div class="kpi-unit">%</div>
+                            <div class="kpi-label">Efficiency</div>
+                        </div>
+                        <div class="kpi-trend positive">↗ +1.3%</div>
+                    </div>
+                </div>
+
+                <!-- Main Chart - Full Width, Prominent -->
+                <div class="chart-container-main">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <h2 class="chart-title">Energy Flow</h2>
+                            <p class="chart-subtitle">Production vs Consumption over time</p>
+                        </div>
+                        <div class="time-filters-modern">
+                            <button class="filter-btn-modern" data-filter="daily" onclick="switchAnalysisFilter('daily')">Day</button>
+                            <button class="filter-btn-modern" data-filter="weekly" onclick="switchAnalysisFilter('weekly')">Week</button>
+                            <button class="filter-btn-modern active" data-filter="monthly" onclick="switchAnalysisFilter('monthly')">Month</button>
+                        </div>
+                    </div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="analysisChart" height="70"></canvas>
+                    </div>
+                </div>
+
+                <!-- Insights & Summary Row -->
+                <div class="insights-grid">
+                    <!-- What This Means -->
+                    <div class="insight-card insight-primary">
+                        <div class="insight-header">
+                            <span class="insight-icon">💡</span>
+                            <h3 class="insight-title">What This Means</h3>
+                        </div>
+                        <div class="insight-content" id="performanceInsights">
+                            <div class="insight-item">
+                                <span class="insight-emoji">✅</span>
+                                <p class="insight-text">Your system is producing <strong>24.3 kWh more</strong> than you're using daily</p>
+                            </div>
+                            <div class="insight-item">
+                                <span class="insight-emoji">💰</span>
+                                <p class="insight-text">You're saving approximately <strong>₹680/day</strong> on electricity</p>
+                            </div>
+                            <div class="insight-item">
+                                <span class="insight-emoji">🌱</span>
+                                <p class="insight-text">Your solar system is offsetting <strong>133% of your usage</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Month Summary -->
+                    <div class="insight-card insight-secondary">
+                        <div class="insight-header">
+                            <span class="insight-icon">📊</span>
+                            <h3 class="insight-title">This Month</h3>
+                        </div>
+                        <div class="month-summary" id="monthlyBreakdown">
+                            <div class="summary-stat">
+                                <span class="summary-label">Generated</span>
+                                <span class="summary-value">1,275 kWh</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="summary-label">Consumed</span>
+                                <span class="summary-value">546 kWh</span>
+                            </div>
+                            <div class="summary-stat highlight">
+                                <span class="summary-label">Net Surplus</span>
+                                <span class="summary-value">729 kWh</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="summary-label">Savings</span>
+                                <span class="summary-value">₹20,400</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PERFORMANCE SECTION -->
+            <section id="performance" class="page-section">
+                <!-- Performance Score Hero - Circular Visual -->
+                <div class="performance-hero">
+                    <div class="performance-score-container">
+                        <div class="score-circle-wrapper">
+                            <svg class="score-circle" viewBox="0 0 200 200">
+                                <circle class="score-bg" cx="100" cy="100" r="85" />
+                                <circle class="score-progress" cx="100" cy="100" r="85" id="scoreProgressCircle" />
+                            </svg>
+                            <div class="score-content">
+                                <div class="score-value" id="performanceScoreValue">96</div>
+                                <div class="score-label">Performance</div>
+                                <div class="score-status" id="performanceStatus">Excellent</div>
+                            </div>
+                        </div>
+                        <div class="score-insight">
+                            <div class="insight-icon-large">✨</div>
+                            <h3 class="insight-title-large">What This Means</h3>
+                            <p class="insight-text-large" id="performanceInsightText">
+                                Your system is performing exceptionally well. All panels are generating power efficiently with no issues detected.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics Grid -->
+                <div class="performance-metrics-grid">
+                    <!-- Overall Efficiency Card -->
+                    <div class="metric-card metric-primary">
+                        <div class="metric-icon">🎯</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="overallEfficiency">94.5%</div>
+                            <div class="metric-label">System Efficiency</div>
+                            <div class="metric-explanation">How well your panels convert sunlight to electricity</div>
+                        </div>
+                        <div class="metric-status-badge good">Optimal</div>
+                    </div>
+
+                    <!-- Daily Output Card -->
+                    <div class="metric-card metric-secondary">
+                        <div class="metric-icon">⚡</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="dailyOutput">42.5 kWh</div>
+                            <div class="metric-label">Today's Output</div>
+                            <div class="metric-explanation">Total energy generated so far today</div>
+                        </div>
+                        <div class="metric-status-badge good">On Track</div>
+                    </div>
+
+                    <!-- Peak Power Card -->
+                    <div class="metric-card metric-accent">
+                        <div class="metric-icon">📈</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="peakPower">6.1 kW</div>
+                            <div class="metric-label">Peak Power</div>
+                            <div class="metric-explanation">Maximum power generated at any moment</div>
+                        </div>
+                        <div class="metric-status-badge good">Strong</div>
+                    </div>
+                </div>
+
+                <!-- Panel Groups Performance -->
+                <div class="panel-groups-section">
+                    <div class="section-header-modern">
+                        <div class="header-content">
+                            <h3 class="section-title-modern">Panel Groups</h3>
+                            <p class="section-subtitle-modern">Individual performance of each panel group</p>
+                        </div>
+                    </div>
+                    <div class="panel-groups-grid" id="panelGroupsList">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- MAINTENANCE / SUPPORT SECTION -->
+            <section id="maintenance" class="page-section">
+                <!-- Submit Complaint Card -->
+                <div class="complaint-submit-card">
+                    <div class="complaint-header">
+                        <div class="header-icon-large">🛠️</div>
+                        <div class="header-text">
+                            <h2 class="complaint-title">Need Help?</h2>
+                            <p class="complaint-subtitle">Submit a complaint or request support - we're here to help</p>
+                        </div>
+                    </div>
+
+                    <form class="complaint-form" id="complaintForm">
+                        <div class="form-row-double">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <span class="label-text">Complaint Type</span>
+                                    <span class="label-required">*</span>
+                                </label>
+                                <select class="form-select" id="complaintType" required>
+                                    <option value="">Select issue type...</option>
+                                    <option value="performance">⚡ Low Power Generation</option>
+                                    <option value="technical">🔧 Technical Issue</option>
+                                    <option value="cleaning">🧹 Panel Cleaning Needed</option>
+                                    <option value="damage">⚠️ Physical Damage</option>
+                                    <option value="billing">💰 Billing Question</option>
+                                    <option value="installation">🏗️ Installation Issue</option>
+                                    <option value="other">💬 Other</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <span class="label-text">Priority</span>
+                                    <span class="label-required">*</span>
+                                </label>
+                                <select class="form-select" id="complaintPriority" required>
+                                    <option value="">Select priority...</option>
+                                    <option value="low">🟢 Low - Can wait a few days</option>
+                                    <option value="medium">🟡 Medium - Within 2-3 days</option>
+                                    <option value="high">🟠 High - Within 24 hours</option>
+                                    <option value="urgent">🔴 Urgent - Immediate attention</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="label-text">Description</span>
+                                <span class="label-optional">(Optional)</span>
+                            </label>
+                            <textarea 
+                                class="form-textarea" 
+                                id="complaintDescription" 
+                                rows="4" 
+                                placeholder="Please describe the issue in detail. The more information you provide, the faster we can help..."
+                            ></textarea>
+                            <span class="form-hint">💡 Tip: Include when the issue started and what you've already tried</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="label-text">Attach Photo</span>
+                                <span class="label-optional">(Optional)</span>
+                            </label>
+                            <div class="file-upload-area" id="fileUploadArea">
+                                <input type="file" class="file-input" id="complaintPhoto" accept="image/*" />
+                                <div class="file-upload-content">
+                                    <span class="upload-icon">📷</span>
+                                    <span class="upload-text">Click to upload or drag and drop</span>
+                                    <span class="upload-hint">PNG, JPG up to 5MB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit">
+                                <span class="btn-icon">📤</span>
+                                <span class="btn-text">Submit Complaint</span>
+                            </button>
+                            <button type="button" class="btn-cancel" onclick="resetComplaintForm()">
+                                <span class="btn-text">Clear Form</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Success Message (Hidden by default) -->
+                    <div class="success-message" id="successMessage" style="display: none;">
+                        <div class="success-icon">✅</div>
+                        <div class="success-content">
+                            <h3 class="success-title">Complaint Submitted Successfully!</h3>
+                            <p class="success-text">Your complaint has been received. Our support team will contact you within <strong id="responseTime">24 hours</strong>.</p>
+                            <p class="success-ref">Reference ID: <strong id="complaintRef">#C-2026-001</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Complaints List -->
+                <div class="complaints-section">
+                    <div class="section-header-modern">
+                        <div class="header-content">
+                            <h3 class="section-title-modern">Your Complaints</h3>
+                            <p class="section-subtitle-modern">Track the status of your submitted complaints</p>
+                        </div>
+                        <div class="header-actions">
+                            <select class="filter-select" id="complaintFilter" onchange="filterComplaints(this.value)">
+                                <option value="all">All Complaints</option>
+                                <option value="open">Open</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="complaints-list" id="complaintsList">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- FINANCE SECTION -->
+            <section id="finance" class="page-section">
+                <div class="dashboard-grid">
+                    <!-- Total Savings Card -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Total Savings</h3>
+                        </div>
+                        <div class="card-content center">
+                            <div class="large-stat">
+                                <span class="large-value" id="totalSavings">₹2,10,000</span>
+                            </div>
+                            <p class="stat-label">Lifetime Savings</p>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Savings Card -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Monthly Savings</h3>
+                        </div>
+                        <div class="card-content center">
+                            <div class="large-stat">
+                                <span class="large-value" id="monthlySavings">₹8,540</span>
+                            </div>
+                            <p class="stat-label">This Month</p>
+                        </div>
+                    </div>
+
+                    <!-- Tariff Card -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Tariff Rate</h3>
+                        </div>
+                        <div class="card-content center">
+                            <div class="large-stat">
+                                <span class="large-value" id="tariffRate">₹8.5/kWh</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payback Progress Card -->
+                    <div class="dashboard-card card-wide">
+                        <div class="card-header">
+                            <h3 class="card-title">Payback Progress</h3>
+                            <span class="card-subtitle">Est. completion: <span id="paybackYear">2028</span></span>
+                        </div>
+                        <div class="card-content">
+                            <div class="progress-info">
+                                <span class="progress-label">Progress</span>
+                                <span class="progress-value" id="paybackProgress">42%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="paybackBar" style="width: 42%"></div>
+                            </div>
+                            <div class="finance-stats">
+                                <div class="finance-stat">
+                                    <span class="stat-label">Total Investment</span>
+                                    <span class="stat-value" id="totalInvestment">₹5,00,000</span>
+                                </div>
+                                <div class="finance-stat">
+                                    <span class="stat-label">Recovered</span>
+                                    <span class="stat-value" id="amountRecovered">₹2,10,000</span>
+                                </div>
+                                <div class="finance-stat">
+                                    <span class="stat-label">Remaining</span>
+                                    <span class="stat-value" id="amountRemaining">₹2,90,000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ROI & PAYBACK FORECAST SECTION -->
+            <section id="roi" class="page-section">
+                <!-- Summary Cards -->
+                <div class="roi-summary-grid">
+                    <div class="dashboard-card roi-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Installation Cost</h3>
+                        </div>
+                        <div class="card-content center">
+                            <div class="large-stat">
+                                <span class="large-value" id="roiInstallationCost">₹5L</span>
+                            </div>
+                            <p class="stat-label">Initial Investment</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card roi-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Payback Period</h3>
+                        </div>
+                        <div class="card-content center">
+                            <div class="large-stat">
+                                <span class="large-value" id="roiPaybackYears">5</span>
+                                <span class="large-unit">Years</span>
+                            </div>
+                            <p class="stat-label">Break Even Point</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card roi-card">
+                        <div class="card-header">
+                            <h3 class="card-title">10-Year Savings</h3>
+                        </div>
+                        <div class="card-content center">
+                            <div class="large-stat">
+                                <span class="large-value" id="roiSavings10">₹8.5L</span>
+                            </div>
+                            <p class="stat-label">Projected Returns</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card roi-card">
+                        <div class="card-header">
+                            <h3 class="card-title">25-Year Net Profit</h3>
+                        </div>
+                        <div class="card-content center">
+                            <div class="large-stat">
+                                <span class="large-value" id="roiNetProfit25">₹30L</span>
+                            </div>
+                            <p class="stat-label">After Investment Recovery</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card roi-card">
+                        <div class="card-header">
+                            <h3 class="card-title">25-Year Total Savings</h3>
+                        </div>
+                        <div class="card-content center">
+                            <div class="large-stat">
+                                <span class="large-value" id="roiSavings25">₹35L</span>
+                            </div>
+                            <p class="stat-label">Lifetime Returns</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card roi-card">
+                        <div class="card-header">
+                            <h3 class="card-title">ROI (25 Years)</h3>
+                        </div>
+                        <div class="card-content center">
+                            <div class="large-stat">
+                                <span class="large-value" id="roiPercent25">600</span>
+                                <span class="large-unit">%</span>
+                            </div>
+                            <p class="stat-label">Return on Investment</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROI Chart -->
+                <div class="dashboard-card card-wide">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Cumulative Savings vs Investment</h3>
+                            <span class="card-subtitle">Track your return over 25 years</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <canvas id="roiChart" height="80"></canvas>
+                    </div>
+                </div>
+
+                <!-- Forecast Table -->
+                <div class="dashboard-card card-wide">
+                    <div class="card-header">
+                        <h3 class="card-title">Year-by-Year Forecast</h3>
+                        <span class="card-subtitle">Detailed projection with degradation & tariff growth</span>
+                    </div>
+                    <div class="card-content">
+                        <div id="forecastTable"></div>
+                    </div>
+                </div>
+
+                <!-- ROI Insights -->
+                <div class="dashboard-card card-wide">
+                    <div class="card-header">
+                        <h3 class="card-title">ROI Insights</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="roiInsights"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REPORTS SECTION -->
+            <section id="reports" class="page-section">
+                <div class="dashboard-grid">
+                    <!-- Monthly Reports Card -->
+                    <div class="dashboard-card card-wide">
+                        <div class="card-header">
+                            <h3 class="card-title">Monthly Reports</h3>
+                        </div>
+                        <div class="card-content">
+                            <div id="reportsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Yearly Summary Card -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Yearly Summary 2025</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="info-list">
+                                <div class="info-row">
+                                    <span class="info-label">Total Generation</span>
+                                    <span class="info-value" id="yearlyGeneration">14,200 kWh</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Total Consumption</span>
+                                    <span class="info-value" id="yearlyConsumption">11,500 kWh</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Total Savings</span>
+                                    <span class="info-value" id="yearlySavings">₹95,000</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Avg Efficiency</span>
+                                    <span class="info-value" id="yearlyEfficiency">95%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROFILE SECTION -->
+            <section id="profile" class="page-section">
+                <div class="dashboard-grid">
+                    <!-- Profile Edit Card -->
+                    <div class="dashboard-card card-wide">
+                        <div class="card-header">
+                            <h3 class="card-title">Edit Profile</h3>
+                            <span class="card-subtitle">Update your profile details</span>
+                        </div>
+                        <div class="card-content">
+                            <form id="profileForm" class="profile-form">
+                                <!-- PERSONAL & LOCATION SECTION -->
+                                <div class="profile-section-title">
+                                    👤 Personal & Location Details
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="profileName">Name</label>
+                                    <input type="text" id="profileName" class="form-input" placeholder="Enter your name" required>
+                                    <small class="field-hint">Your full name</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="profileEmail">Email</label>
+                                    <input type="email" id="profileEmail" class="form-input" placeholder="Enter your email" required>
+                                    <small class="field-hint">Contact email address</small>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="profileState">State</label>
+                                        <select id="profileState" class="form-input" required>
+                                            <option value="">Select State</option>
+                                        </select>
+                                        <small class="field-hint">Select your state</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="profileCity">City</label>
+                                        <input type="text" id="profileCity" class="form-input" placeholder="Enter city" required>
+                                        <small class="field-hint">Your city name</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="profileLocation">Full Address / Location</label>
+                                    <input type="text" id="profileLocation" class="form-input" placeholder="Enter full address" required>
+                                    <small class="field-hint">Complete installation address</small>
+                                </div>
+                                
+                                <div class="profile-section-divider"></div>
+                                
+                                <!-- SYSTEM DETAILS SECTION -->
+                                <div class="profile-section-title">
+                                    ⚡ System Details
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="profilePlantName">Plant Name</label>
+                                    <input type="text" id="profilePlantName" class="form-input" placeholder="Enter plant name" required>
+                                    <small class="field-hint">Name for your solar system</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="profileSystemSize">System Size (kW)</label>
+                                    <input type="number" id="profileSystemSize" class="form-input" placeholder="Enter system size" min="1" step="0.1" required>
+                                    <small class="field-hint">Solar panel capacity in kilowatts</small>
+                                </div>
+                                
+                                <!-- Installation Type Selection -->
+                                <div class="form-group form-group-full">
+                                    <label class="form-label-main">Installation Type</label>
+                                    <div class="purchase-type-toggle">
+                                        <label class="radio-option">
+                                            <input type="radio" name="installationType" value="residential" id="installationTypeResidential" checked>
+                                            <span class="radio-label">
+                                                <span class="radio-icon">🏠</span>
+                                                <span class="radio-text">Residential Rooftop</span>
+                                            </span>
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="installationType" value="commercial" id="installationTypeCommercial">
+                                            <span class="radio-label">
+                                                <span class="radio-icon">🏢</span>
+                                                <span class="radio-text">Commercial</span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="profile-section-divider"></div>
+                                
+                                <!-- ELECTRICITY & COST SECTION -->
+                                <div class="profile-section-title">
+                                    💡 Electricity & Cost
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="profileTariff">Tariff per Unit (₹/kWh)</label>
+                                    <input type="number" id="profileTariff" class="form-input" placeholder="Enter tariff rate" min="0.1" step="0.1" required>
+                                    <small class="field-hint">Current electricity rate per unit</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="profileInstallationCost">Solar Installation Cost (₹)</label>
+                                    <input type="number" id="profileInstallationCost" class="form-input" placeholder="Enter installation cost" min="50000" step="10000" required>
+                                    <small class="field-hint">Total cost of solar system</small>
+                                </div>
+                                
+                                <div class="profile-section-divider"></div>
+                                
+                                <!-- PURCHASE TYPE SECTION -->
+                                <div class="profile-section-title">
+                                    💰 Purchase Type
+                                </div>
+                                
+                                <!-- Purchase Type Selection -->
+                                <div class="form-group form-group-full">
+                                    <label class="form-label-main">How will you purchase?</label>
+                                    <div class="purchase-type-toggle">
+                                        <label class="radio-option">
+                                            <input type="radio" name="purchaseType" value="cash" id="purchaseTypeCash" checked>
+                                            <span class="radio-label">
+                                                <span class="radio-icon">💵</span>
+                                                <span class="radio-text">Cash Purchase</span>
+                                            </span>
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="purchaseType" value="loan" id="purchaseTypeLoan">
+                                            <span class="radio-label">
+                                                <span class="radio-icon">💳</span>
+                                                <span class="radio-text">Loan / EMI</span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Loan / EMI Details (Conditional - Only shown when Loan selected) -->
+                                <div id="loanPurchaseSection" class="loan-purchase-section" style="display: none;">
+                                    <div class="purchase-section-header">
+                                        <h4 class="purchase-section-title">💳 Loan / EMI Details</h4>
+                                        <p class="purchase-section-subtitle">Enter your loan information</p>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="loanInstallationCost">Installation Cost (₹)</label>
+                                            <input type="number" id="loanInstallationCost" class="form-input" placeholder="500000" min="50000" step="10000" required>
+                                            <small class="field-hint">Total cost of solar system</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="loanDownPayment">Down Payment (₹)</label>
+                                            <input type="number" id="loanDownPayment" class="form-input" placeholder="100000" min="0" step="10000" required>
+                                            <small class="field-hint">Upfront payment amount</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="loanInterestRate">Interest Rate (% per year)</label>
+                                            <input type="number" id="loanInterestRate" class="form-input" placeholder="9.5" min="0.1" max="20" step="0.1" required>
+                                            <small class="field-hint">Annual interest rate</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="loanTenure">Loan Tenure (Years)</label>
+                                            <input type="number" id="loanTenure" class="form-input" placeholder="5" min="1" max="25" step="1" required>
+                                            <small class="field-hint">Loan repayment period</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Hidden fields for internal calculations -->
+                                    <input type="hidden" id="loanAmount">
+                                    <input type="hidden" id="loanEMI">
+                                    
+                                    <!-- Simple helper text -->
+                                    <div class="loan-helper-text">
+                                        <div class="helper-icon">ℹ️</div>
+                                        <div class="helper-message">
+                                            Loan EMI, interest, subsidy and payback are calculated automatically and applied to your ROI.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-save">
+                                        💾 Save Profile
+                                    </button>
+                                    <button type="button" class="btn-cancel" onclick="loadProfileForm()">
+                                        ↺ Reset
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Summary Card -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Profile Summary</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="profile-summary">
+                                <div class="profile-avatar">
+                                    <span class="avatar-icon">👤</span>
+                                </div>
+                                <div class="profile-info">
+                                    <h3 id="summaryName">Rahul Patel</h3>
+                                    <p id="summaryEmail">rahul@email.com</p>
+                                </div>
+                            </div>
+                            <div class="info-list">
+                                <div class="info-row">
+                                    <span class="info-label">Plant Name</span>
+                                    <span class="info-value" id="summaryPlantName">Home Rooftop Solar</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">System Size</span>
+                                    <span class="info-value" id="summarySystemSize">10 kW</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">State</span>
+                                    <span class="info-value" id="summaryState">Gujarat</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">City</span>
+                                    <span class="info-value" id="summaryCity">Surat</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Location</span>
+                                    <span class="info-value" id="summaryLocation">Surat</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Tariff Rate</span>
+                                    <span class="info-value" id="summaryTariff">₹8/kWh</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Installation Cost</span>
+                                    <span class="info-value" id="summaryInstallationCost">₹5,00,000</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Purchase Type</span>
+                                    <span class="info-value" id="summaryPurchaseType">Cash Purchase</span>
+                                </div>
+                                <div class="info-row" id="summarySubsidyRow" style="display: none;">
+                                    <span class="info-label">Central Subsidy</span>
+                                    <span class="info-value" id="summaryCentralSubsidy">₹0</span>
+                                </div>
+                                <div class="info-row" id="summaryStateSubsidyRow" style="display: none;">
+                                    <span class="info-label">State Subsidy</span>
+                                    <span class="info-value" id="summaryStateSubsidy">₹0</span>
+                                </div>
+                                <div class="info-row" id="summaryTotalSubsidyRow" style="display: none;">
+                                    <span class="info-label">Total Subsidy</span>
+                                    <span class="info-value" id="summaryTotalSubsidy">₹0</span>
+                                </div>
+                                <div class="info-row" id="summaryNetCostRow" style="display: none;">
+                                    <span class="info-label">Net System Cost</span>
+                                    <span class="info-value" id="summaryNetCost">₹5,00,000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS SECTION -->
+            <section id="settings" class="page-section">
+                <div class="dashboard-grid">
+                    <!-- System Settings Card -->
+                    <div class="dashboard-card card-wide">
+                        <div class="card-header">
+                            <h3 class="card-title">System Settings</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="info-list">
+                                <div class="info-row">
+                                    <span class="info-label">System Name</span>
+                                    <span class="info-value" id="systemName">AKVENERGY Solar System</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Location</span>
+                                    <span class="info-value">
+                                        <span id="locationCity">Mumbai</span>, <span id="locationState">Maharashtra</span>
+                                    </span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Tariff per Unit</span>
+                                    <span class="info-value" id="settingsTariff">₹8.5/kWh</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Timezone</span>
+                                    <span class="info-value" id="timezone">IST (UTC+5:30)</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Language</span>
+                                    <span class="info-value" id="language">English</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preferences Card -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Preferences</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="settings-toggle">
+                                <span class="toggle-label">Notifications</span>
+                                <input type="checkbox" id="notificationsToggle" checked>
+                            </div>
+                            <div class="settings-toggle">
+                                <span class="toggle-label">Dark Theme</span>
+                                <input type="checkbox" id="themeToggle" checked>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================ -->
+            <!-- ADMIN SECTIONS (Admin Only) -->
+            <!-- ============================================ -->
+
+            <!-- ADMIN DASHBOARD SECTION -->
+            <section id="admin-dashboard" class="page-section">
+                <div id="adminDashboardContent">
+                    <!-- Populated by admin-dashboard.js -->
+                </div>
+            </section>
+
+            <!-- ADMIN CUSTOMERS SECTION -->
+            <section id="admin-customers" class="page-section">
+                <div id="adminCustomersContent">
+                    <!-- Populated by admin-dashboard.js -->
+                </div>
+            </section>
+
+            <!-- ADMIN SYSTEMS SECTION -->
+            <section id="admin-systems" class="page-section">
+                <div id="adminSystemsContent">
+                    <!-- Populated by admin-dashboard.js -->
+                </div>
+            </section>
+
+            <!-- ADMIN COMPLAINTS SECTION -->
+            <section id="admin-complaints" class="page-section">
+                <div id="adminComplaintsContent">
+                    <!-- Populated by admin-dashboard.js -->
+                </div>
+            </section>
+
+            <!-- ADMIN LEADS SECTION (NEW) -->
+            <section id="admin-leads" class="page-section">
+                <div id="adminLeadsContent">
+                    <!-- Populated by admin-leads.js -->
+                </div>
+            </section>
+
+            <!-- ADMIN REPORTS SECTION -->
+            <section id="admin-reports" class="page-section">
+                <div id="adminReportsContent">
+                    <!-- Populated by admin-dashboard.js -->
+                </div>
+            </section>
+
+            <!-- ADMIN SETTINGS SECTION -->
+            <section id="admin-settings" class="page-section">
+                <div id="adminSettingsContent">
+                    <!-- Populated by admin-dashboard.js -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    
+    <!-- JavaScript Modules -->
+    <script src="js/supabase-auth.js"></script>
+    <script src="js/supabase-backend.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/rbac.js"></script>
+    <script src="js/admin-store.js"></script>
+    <script src="js/lead-tracker.js"></script>
+    <script src="js/dashboard-state.js"></script>
+    <script src="js/subsidy-engine.js"></script>
+    <script src="js/dashboard-data.js"></script>
+    <script src="js/analysis-enhanced.js"></script>
+    <script src="js/profile-edit.js"></script>
+    <script src="js/profile-supabase.js"></script>
+    <script src="js/weather-engine.js"></script>
+    <script src="js/roi-forecast.js"></script>
+    <script src="js/loan-emi-calculator.js"></script>
+    <script src="js/dashboard-simple.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+    <script src="js/admin-analytics.js"></script>
+    <script src="js/admin-leads.js"></script>
+    
+    <!-- Route Protection Script -->
+    <script>
+        // Protect dashboard route - require authentication
+        if (!window.requireAuth()) {
+            // Will redirect to login if not authenticated
+            throw new Error('Authentication required');
+        }
+    </script>
+</body>
+</html>
+

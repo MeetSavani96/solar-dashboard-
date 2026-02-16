@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AKVENERGY Solar Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        /* Login Page Specific Styles */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 3rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .login-logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            font-size: 1rem;
+            color: var(--text-tertiary);
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .login-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .login-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .login-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.2rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all var(--transition-fast);
+        }
+
+        .login-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(0, 217, 163, 0.1);
+        }
+
+        .login-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .login-button {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-teal));
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 1.1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            box-shadow: 0 4px 15px rgba(0, 217, 163, 0.3);
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 217, 163, 0.4);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-error {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            color: #f44336;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .login-demo {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .demo-title {
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .demo-accounts {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .demo-account {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .demo-account:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary-green);
+        }
+
+        .demo-account strong {
+            color: var(--text-primary);
+        }
+
+        .demo-role {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .demo-role.admin {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+        }
+
+        .demo-role.customer {
+            background: rgba(0, 217, 163, 0.2);
+            color: var(--primary-green);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1 class="login-logo">AKVENERGY</h1>
+                <p class="login-subtitle">Solar Monitoring Dashboard</p>
+            </div>
+
+            <form class="login-form" id="loginForm">
+                <div class="login-error" id="loginError">
+                    Invalid credentials. Please try again.
+                </div>
+
+                <div class="login-form-group">
+                    <label class="login-label" for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="login-input" 
+                        placeholder="Enter your email"
+                        required
+                    />
+                </div>
+
+                <div class="login-form-group">
+                    <label class="login-label" for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        class="login-input" 
+                        placeholder="Enter your password"
+                        required
+                    />
+                </div>
+
+                <button type="submit" class="login-button" id="loginButton">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Demo Accounts -->
+            <div class="login-demo">
+                <p class="demo-title">Demo Accounts (Click to auto-fill)</p>
+                <div class="demo-accounts">
+                    <div class="demo-account" onclick="fillDemoAccount('admin')">
+                        <strong>Admin Account</strong>
+                        <span class="demo-role admin">ADMIN</span>
+                        <br>
+                        <span>admin@akvenergy.com / admin123</span>
+                    </div>
+                    <div class="demo-account" onclick="fillDemoAccount('customer')">
+                        <strong>Customer Account</strong>
+                        <span class="demo-role customer">CUSTOMER</span>
+                        <br>
+                        <span>customer@example.com / customer123</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    
+    <!-- Authentication Scripts -->
+    <script src="js/supabase-auth.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
